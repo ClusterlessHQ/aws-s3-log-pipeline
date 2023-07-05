@@ -1,0 +1,10 @@
+*.iml
+.idea
+.venv
+cdk.context.json
+local.sh
+cdk.out
+.clsconfig
+.clsconfig-aws
+.properties.libsonnet
+.project.json
