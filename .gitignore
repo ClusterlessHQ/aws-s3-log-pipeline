@@ -1,6 +1,7 @@
 *.iml
 .idea
 .venv
+.envrc
 cdk.context.json
 local.sh
 cdk.out

@@ -1,0 +1,29 @@
+{
+	"name": "s3-access-log-ingest",
+	"source": {
+		"schema": {
+			"name": "aws-s3-access-log",
+			"embedsSchema": false
+		}
+	},
+	"transform": [
+		"@{source.manifestLot}=>lot|string"
+	],
+	"sink": {
+		"schema": {
+			"format": "parquet",
+			"compression": "gzip"
+		},
+		"partitions": [
+			"time+>time_ymd|DateTime|yyyyMMdd",
+			"lot"
+		],
+		"namedPartitions": true,
+		"filename": {
+			"prefix": "access",
+			"includeGuid": true,
+			"providedGuid": "@{sink.manifestLot}-@{currentTimeMillis}",
+			"includeFieldsHash": true
+		}
+	}
+}

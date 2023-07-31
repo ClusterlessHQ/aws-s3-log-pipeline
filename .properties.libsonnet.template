@@ -1,0 +1,12 @@
+{
+    // context
+    project: 'logs',
+
+    // placement data
+    stage: 'test',
+    account: '...',
+    region: 'us-east-2',
+
+    // log data location
+    logs: 's3://...'
+}
