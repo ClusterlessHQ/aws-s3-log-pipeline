@@ -1,8 +1,6 @@
 # Convert AWS S3 Access Logs to Parquet
 
-
-
-This repo provides a sample pipeline using [Clusterless](https://github.com/ClusterlessHQ/clusterless) and [Tessellate](https://github.com/ClusterlessHQ/tessellate) to convert native [AWS S3 access logs](https://docs.aws.amazon.com/AmazonS3/latest/userguide/LogFormat.html) into [Apache Parquet](https://parquet.apache.org) files for use with tools like AWS Athena.
+This repo provides a sample pipeline using [Clusterless](https://github.com/ClusterlessHQ/clusterless) and [Tessellate](https://github.com/ClusterlessHQ/tessellate) to convert native [AWS S3 access logs](https://docs.aws.amazon.com/AmazonS3/latest/userguide/LogFormat.html) into [Apache Parquet](https://parquet.apache.org) files for use with tools like AWS Athena (or any other log format with minor edits).
 
 See https://github.com/ClusterlessHQ/clusterless-aws-examples for simpler examples that should be run first to familiarize yourself with Clusterless.
 
@@ -32,6 +30,8 @@ For this to work, `--approve` must be included in the `cls` command, which may s
 
 Alternatively, pipe the jsonnet output to a file and then run `cls` on the file without `--approve` to enable
 manual approvals.
+
+By editing `app/ingest.json`, this sample can trivially parse other log formats into Parquet. See the Tessellate documentation for more information.
 
 ## Running
 
