@@ -12,9 +12,9 @@ This example expects that an existing bucket in your account has [server access 
 
 The project file, `aws-logs-arc-project.jsonnet`, when deployed, will create three core resources. 
 
-A new AWS S3 bucket to store the result [dataset](https://docs.clusterless.io/guide/wip-1.0/concepts/dataset.html) as Parquet files. A [Clusterless Boundary](https://docs.clusterless.io/guide/wip-1.0/concepts/boundary.html)  (a Clusterless provided AWS Lambda), to listen to the logging location for new log files in order to push availability events. And a [Clusterless Arc](https://docs.clusterless.io/guide/wip-1.0/concepts/arc.html) to listen for new log availability events and convert the text files into Parquet. 
+A new AWS S3 bucket to store the result [dataset](https://docs.clusterless.io/guide/1.0-wip/concepts/dataset.html) as Parquet files. A [Clusterless Boundary](https://docs.clusterless.io/guide/1.0-wip/concepts/boundary.html)  (a Clusterless provided AWS Lambda), to listen to the logging location for new log files in order to push availability events. And a [Clusterless Arc](https://docs.clusterless.io/guide/1.0-wip/concepts/arc.html) to listen for new log availability events and convert the text files into Parquet. 
 
-The arc [workload](https://docs.clusterless.io/guide/wip-1.0/concepts/workload.html) is simply a Tessellate instance running as a Docker image in AWS Fargate. When the arc completes, a new availability event is published allowing for other arcs to participate in the pipeline.
+The arc [workload](https://docs.clusterless.io/guide/1.0-wip/concepts/workload.html) is simply a Tessellate instance running as a Docker image in AWS Fargate. When the arc completes, a new availability event is published allowing for other arcs to participate in the pipeline.
 
 Every time AWS drops a new log file in the access logging bucket, the boundary is notified by AWS. The boundary in turn, every 5 minutes, creates a manifest of the newly arrived file(s) and publishes an availability event for the access log dataset.
 
