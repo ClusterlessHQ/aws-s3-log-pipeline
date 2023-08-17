@@ -1,13 +1,17 @@
 local props = import '.properties.libsonnet';
-local project = props.project; // no spaces
-local stage = props.stage; // TEST, or PROD, etc
+local version = '20230817';
+local project = props.project;  // no spaces
+local stage = props.stage;  // TEST, or PROD, etc
 local account = props.account;
 local region = props.region;
 local bucketName = stage + '-' + project + '-aws-logs-' + account + '-' + region;
 local bucketPrefix = 's3://' + bucketName;
+
+local sourceVersion = version;
+local sinkVersion = version;
+local databaseName = stage + '-' + project + '-aws-logs';
+local tableName = stage + '-' + project + '-' + sinkVersion + '-aws-logs';
 local unit = 'Twelfths';
-local sourceVersion = '20230705';
-local sinkVersion = '20230705';
 
 // the S3 URI referencing the access logs
 local accessLogs = props.logs;
@@ -15,7 +19,7 @@ local accessLogs = props.logs;
 {
   project: {
     name: 'AwsLogs',
-    version: sourceVersion + '-00',
+    version: version + '-00',
   },
   placement: {
     stage: stage,
@@ -32,7 +36,138 @@ local accessLogs = props.logs;
     {
       type: 'aws:core:computeEnvironment',
       name: 'simple',
-      computeEnvironmentName: 'simpleComputeEnvironment'
+      computeEnvironmentName: 'simpleComputeEnvironment',
+    },
+    {
+      type: 'aws:core:glueDatabase',
+      name: 'database',
+      databaseName: databaseName,
+    },
+    {
+      type: 'aws:core:glueTable',
+      name: 'table',
+      databaseRef: 'database',
+      tableName: tableName,
+      pathURI: bucketPrefix + '/access-logs/',
+      schema: {
+        columns: [
+          {
+            name: 'bucketOwner',
+            type: 'string',
+          },
+          {
+            name: 'bucket',
+            type: 'string',
+          },
+          {
+            name: 'time',
+            type: 'timestamp',
+          },
+          {
+            name: 'remoteIP',
+            type: 'string',
+          },
+          {
+            name: 'requester',
+            type: 'string',
+          },
+          {
+            name: 'requestID',
+            type: 'string',
+          },
+          {
+            name: 'operation',
+            type: 'string',
+          },
+          {
+            name: 'key',
+            type: 'string',
+          },
+          {
+            name: 'requestURI',
+            type: 'string',
+          },
+          {
+            name: 'httpStatus',
+            type: 'int',
+          },
+          {
+            name: 'errorCode',
+            type: 'string',
+          },
+          {
+            name: 'bytesSent',
+            type: 'bigint',
+          },
+          {
+            name: 'objectSize',
+            type: 'bigint',
+          },
+          {
+            name: 'totalTime',
+            type: 'bigint',
+          },
+          {
+            name: 'turnAroundTime',
+            type: 'bigint',
+          },
+          {
+            name: 'referrer',
+            type: 'string',
+          },
+          {
+            name: 'userAgent',
+            type: 'string',
+          },
+          {
+            name: 'versionID',
+            type: 'string',
+          },
+          {
+            name: 'hostId',
+            type: 'string',
+          },
+          {
+            name: 'signatureVersion',
+            type: 'string',
+          },
+          {
+            name: 'cipherSuite',
+            type: 'string',
+          },
+          {
+            name: 'authenticationType',
+            type: 'string',
+          },
+          {
+            name: 'hostHeader',
+            type: 'string',
+          },
+          {
+            name: 'tlsVersion',
+            type: 'string',
+          },
+          {
+            name: 'accessPointArn',
+            type: 'string',
+          },
+          {
+            name: 'aclRequired',
+            type: 'string',
+          },
+        ],
+        partitions: [
+          {
+            name: 'time_ymd',
+            type: 'string',
+          },
+          {
+            name: 'lot',
+            type: 'string',
+          },
+        ],
+        dataFormat: 'parquet',
+      },
     },
   ],
   boundaries: [
@@ -43,13 +178,12 @@ local accessLogs = props.logs;
       dataset: {
         name: 's3-access-logs',
         version: sourceVersion,
-        pathURI: accessLogs
+        pathURI: accessLogs,
       },
-      // filename format: 2019-06-12-04-17-02-1CA30D5A9C018088
       lotUnit: unit,
-      runtimeProps:{
-        memorySizeMB: 512
-      }
+      runtimeProps: {
+        memorySizeMB: 512,
+      },
     },
   ],
   arcs: [
@@ -61,14 +195,14 @@ local accessLogs = props.logs;
         main: {
           name: 's3-access-logs',
           version: sourceVersion,
-        pathURI: accessLogs
+          pathURI: accessLogs,
         },
       },
       sinks: {
         main: {
-          name: 'access-logs',
+          name: 'access-logs-parquet',
           version: sinkVersion,
-          pathURI: bucketPrefix + '/access-logs/',
+          pathURI: bucketPrefix + '/s3-access-logs-parquet/',
         },
       },
       workload: {
@@ -83,5 +217,23 @@ local accessLogs = props.logs;
         ],
       },
     },
-  ],
+    {
+      type: 'aws:core:glueAddPartitionsArc',
+      name: 'addPartitions',
+      sources: {
+        main: {
+          name: 'access-logs-parquet',
+          version: sinkVersion,
+          pathURI: bucketPrefix + '/s3-access-logs-parquet/',
+        },
+      },
+      sinks: {
+        main: {
+          name: 'partitions',
+          version: sinkVersion,
+          pathURI: 'glue:///'+databaseName+'/'+tableName,
+        },
+      },
+    },
+    ]
 }
