@@ -7,8 +7,9 @@
     }
   },
   "transform": [
-    "@{source.manifestLot}=>lot|string",
-    "time+>time_ymd|DateTime|yyyyMMdd",
+    "^tsid{node:@{env.AWS_BATCH_JOB_ID}, nodeCount:256} +> id|long",
+    "@{source.manifestLot} => lot|string",
+    "time +> time_ymd|DateTime|yyyyMMdd",
     "time_ymd|string"
   ],
   "sink": {

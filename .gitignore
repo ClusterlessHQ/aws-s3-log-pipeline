@@ -9,3 +9,7 @@ cdk.out
 .clsconfig-aws
 .properties.libsonnet
 .project.json
+
+# put test data here
+# SELECT * FROM read_parquet('data/*.parquet');
+data
