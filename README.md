@@ -170,4 +170,16 @@ jsonnet aws-logs-arc-project.jsonnet | cls destroy -p - --approve
 By default, Clusterless does not destroy most resources like AWS S3 Buckets or AWS Glue Databases and Tables. They will
 need to be removed manually.
 
-This can be overridden via global configuration values. See the Clusterless documentation for more information.
+This can be overridden via local/global configuration values. 
+
+```shell
+cls config init
+```
+
+Then edit the local `.clsconfig` file.
+
+To print the current configuration:
+
+```shell
+cls config show
+```
