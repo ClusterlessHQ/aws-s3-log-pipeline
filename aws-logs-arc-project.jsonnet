@@ -195,7 +195,6 @@ local accessLogs = props.logs;
         main: {
           name: 's3-access-logs',
           version: sourceVersion,
-          pathURI: accessLogs,
         },
       },
       sinks: {
@@ -224,7 +223,6 @@ local accessLogs = props.logs;
         main: {
           name: 'access-logs-parquet',
           version: sinkVersion,
-          pathURI: bucketPrefix + '/s3-access-logs-parquet/',
         },
       },
       sinks: {
