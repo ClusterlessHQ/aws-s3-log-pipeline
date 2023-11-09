@@ -19,11 +19,15 @@ need to be added to the `.properties.libsonnet` file (see below).
 
 The project file, `aws-logs-arc-project.jsonnet`, when deployed, will create five core resources. 
 
-A new AWS S3 bucket to store the result [dataset](https://docs.clusterless.io/guide/1.0-wip/concepts/dataset.html) as
-Parquet files. A [Clusterless Boundary](https://docs.clusterless.io/guide/1.0-wip/concepts/boundary.html)  (a
+- A new AWS S3 bucket to store the result [dataset](https://docs.clusterless.io/guide/1.0-wip/concepts/dataset.html) as
+Parquet files.
+- A [Clusterless Boundary](https://docs.clusterless.io/guide/1.0-wip/concepts/boundary.html)  (a
 Clusterless provided AWS Lambda), to listen to the logging location for new log files in order to push availability
-events. And a [Clusterless Arc](https://docs.clusterless.io/guide/1.0-wip/concepts/arc.html) to listen for new log
+events.
+- A [Clusterless Arc](https://docs.clusterless.io/guide/1.0-wip/concepts/arc.html) to listen for new log
 availability events and convert the text files into Parquet.
+- An AWS Glue database and an AWS Athena queryable table. 
+- And a second arc workload that will add new partitions to the new table as they arrive.
 
 The first arc [workload](https://docs.clusterless.io/guide/1.0-wip/concepts/workload.html) is simply a Tessellate instance
 running as a Docker image in AWS Fargate. When the arc completes, a new availability event is published allowing for
@@ -39,10 +43,7 @@ new dataset availability event is published.
 If no data arrives in the access logging bucket, an event is still published every 5 minutes, but the manifest is marked
 as `empty`. This way it's clear the system is running, but there just happens to be no new data. The Tessellate arc
 still runs, but it in turn also publishes an empty manifest (a future version will short-circuit the workload and
-publish an empty manifest to reduce costs for).
-
-Additionally, an AWS Glue database and table will be created during the deployment phase. Along with a second arc
-workload that will add new partitions to the table as they arrive.
+publish an empty manifest to reduce costs).
 
 ## Notes
 
@@ -50,7 +51,7 @@ This example relies on `jsonnet` to generate the JSON files that are piped into 
 
 For this to work, `--approve` must be included in the `cls` command, which may seem a bit scary.
 
-Alternatively, pipe the jsonnet output to a file and then run `cls` on the file without `--approve` to enable
+Alternatively, pipe the `jsonnet` output to a file and then run `cls` on the file without `--approve` to enable
 manual approvals.
 
 By editing `app/ingest.json`, this sample can trivially parse other log formats into Parquet. See the Tessellate
@@ -98,7 +99,15 @@ Because we are piping the project file into `cls`, we must include the `--approv
 Note, this pipeline could have been split into multiple projects files, one with resources and boundaries, and another
 with arcs. For this example we are using one file.
 
-After deployment, log into S3 to confirm new manifests are being created. They will be located in:
+To show the status of the dataset created by the boundary, call:
+
+```shell
+cls datasets status
+```
+
+You should expect to see the summary for `s3-access-logs`.
+
+Alternatively, log into S3 to confirm new manifests are being created. They will be located in:
 
 `s3://[STAGE]-clusterless-manifest-[ACCOUNT]-[REGION]/datasets/name=s3-access-logs/`
 
@@ -158,6 +167,30 @@ previously deployed as above), and the arc will be created.
 Note that if changes are made to the project file, usually it can just be re-deployed for the updates to take effect.
 This allows a developer to incrementally deploy an updated arc workload for development when testing locally isn't
 possible.
+
+Now to confirm the deployment.
+
+To show the project was deployed.
+
+```shell
+cls projects
+```
+
+To show the dataset status.
+
+```shell
+cls datasets status
+```
+
+When everything is running, there will be three summaries.
+
+Finally, to show the arc status.
+
+```shell
+cls arcs status
+```
+
+In time, you will see two summaries.
 
 ### Destroy
 
